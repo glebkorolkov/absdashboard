@@ -1,3 +1,6 @@
+# Definitions for chart axes, etc.
+
+# Scatter plot axes
 msp_axes = [
     # 'First Filing Date',
     'Origination Date',
@@ -25,6 +28,7 @@ msp_axes = [
     # 'Repossession Date'
     ]
 
+# Histogram axes
 hg_axes = [
     # 'First Filing Date',
     'Origination Date',
@@ -52,6 +56,7 @@ hg_axes = [
     # 'Repossession Date'
 ]
 
+# Heatmap x and y axes
 hm_axes = [
     # 'First Filing Date',
     'Origination Date',
@@ -79,6 +84,7 @@ hm_axes = [
     # 'Repossession Date'
 ]
 
+# Heatmap z axis
 hm_zaxis = [
     'Total count',
     'Non-performing Percentage',
@@ -109,6 +115,7 @@ hm_zaxis = [
     # 'Repossession Date'
 ]
 
+# Indicators for display on map
 map_metrics = [
     # 'First Filing Date',
     # 'Origination Date',
@@ -139,6 +146,7 @@ map_metrics = [
     # 'Repossession Date'
 ]
 
+# List of trusts
 trusts = {
     'Toyota': [
         {'cik': '1694919', 'name': 'Toyota Auto Receivables 2017 A Owner Trust'},
@@ -151,10 +159,12 @@ trusts = {
     ]
 }
 
+# Same as above w/o manufacturer name all in one list
 trusts_flat = []
 for t in trusts:
     trusts_flat += trusts[t]
 
+# Color definitions
 colors = dict(
     green='#4CAF50',
     teal='#009688',
@@ -166,16 +176,20 @@ colors = dict(
     light_grey='#f1f1f1'
 )
 
+# Colorscale
 colorscales = dict(
     green=['#4CAF50', '#68BA6B', '#83C586', '#9FD0A1', '#BADBBB', '#D6E6D6', '#F1F1F1']
 )
 
+# Fonts
 font_family = 'Work Sans, Open Sans, Helvetica, sans-serif'
 
+# List of pandas numeric types potentially used
 numeric_types = ['float16', 'float32', 'float64',
                  'uint8', 'uint16', 'uint32', 'uint64',
                  'int8', 'int16', 'int32', 'int64']
 
+# Field types
 percentage_fields = [
     'Interest Rate (%)',
     'Payment-to-Income Percentage',
@@ -198,12 +212,17 @@ date_fields = [
     'Repossession Date'
 ]
 
+categorical_fields = ['Geographic Location', 'Vehicle Model']
+
+
+# Countable and delinquency fields
 countable_metrics = ['Total count']
 
 # {Name: Field}
 delinquency_metrics = {'Non-performing Percentage': '30 Days Delinquency Date',
                        'Repossessed Percentage': 'Repossession Date'}
 
+# Text templates
 loading_string = "## Loading..."
 
 about_text = '''

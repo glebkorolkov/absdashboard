@@ -1,3 +1,6 @@
+# Database configuration file
+
+# Defaults
 defaults = {
     'autoloans_table': 'autoloans_flat',
     'filings_table': 'filings'

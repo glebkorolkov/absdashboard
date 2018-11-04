@@ -6,7 +6,6 @@ import plotly.graph_objs as go
 from flask_caching import Cache
 import pandas as pd
 import numpy as np
-from textwrap import dedent
 from helper import Helper
 from definitions import *
 
@@ -15,19 +14,20 @@ external_stylesheets = [
     'https://fonts.googleapis.com/css?family=Work+Sans'
 ]
 
+# Create app object
 app = dash.Dash(
     __name__,
     external_stylesheets=external_stylesheets
 )
+app.title = 'Dashboard | Auto Loans'
 
+# Set up cache. Required since dataset for each trust is quite large
 cache = Cache()
 cache_params = {'CACHE_TYPE': 'filesystem', 'CACHE_DIR': 'cache'}
 cache.init_app(app.server, config=cache_params)
 
-app.title = 'Dashboard | Auto Loans'
-
 # PLOTS
-
+# Create Graph objects here. Nothing much here. All action happens inside update functions below
 main_scatter_plot = dcc.Graph(id='main-scatter-plot')
 main_histogram = dcc.Graph(id='main-histogram')
 main_heatmap = dcc.Graph(id='main-heatmap')
@@ -35,7 +35,9 @@ main_map = dcc.Graph(id='main-map')
 main_evo = dcc.Graph(id='main-evo')
 
 # FILTERS
+# Define left column filters
 
+# Scatter plot filters
 msp_filters = html.Div([
     html.Div([
         'Axis Y:',
@@ -67,6 +69,7 @@ msp_filters = html.Div([
     className='filter-area'
 )
 
+# Histogram filters
 hg_filters = html.Div([
     html.Div([
         'Histogram for:',
@@ -107,6 +110,7 @@ hg_filters = html.Div([
     className='filter-area'
 )
 
+# Heatmap filters
 hm_filters = html.Div([
     html.Div([
         'Axis Z (color):',
@@ -138,6 +142,7 @@ hm_filters = html.Div([
     className='filter-area'
 )
 
+# Map filters
 map_filters = html.Div([
     html.Div([
         'Metric:',
@@ -150,6 +155,7 @@ map_filters = html.Div([
     className='filter-area'
 )
 
+# Delinquent loan evolution chart filters
 evo_filters = html.Div([
     html.Div([
         'Metric:',
@@ -175,14 +181,17 @@ evo_filters = html.Div([
     className='filter-area'
 )
 
-# LAYOUT
 
+# LAYOUT
+# Create dashboard layout
 app.layout = html.Div(
     id='main',
     children=[
+        # Header title
         dcc.Markdown(id='trust_title',
                      children=loading_string,
                      className='main-title'),
+        # Manufacturer and trust select boxes
         html.Div([html.Div([
             dcc.Dropdown(
                 id="manu_select",
@@ -192,9 +201,9 @@ app.layout = html.Div(
                 id="trust_select",
                 options=[{'label': t['name'], 'value': t['cik']} for t in trusts['Toyota']],
                 value="1694919")
-        ], className='')
-
+            ], className='')
         ], className='top-select'),
+        # Tabs
         dcc.Tabs(id="tabs",
                  children=[
                      dcc.Tab(
@@ -238,8 +247,7 @@ app.layout = html.Div(
                      )
                  ]
                  ),
-        # hidden signal value
-        # html.Div(id='signal', style={'display': 'none'}, children=f"{featured_trust['cik']}")
+        # Hidden signal div. Required to send signal to update functions when dataset changes
         html.Div(id='signal', style={'display': 'none'}, children="")
     ]
 )
@@ -247,12 +255,13 @@ app.layout = html.Div(
 
 # UPDATES
 
-
+# Extract data from either cache or database
 @cache.memoize()
 def get_data(trust_cik):
     return Helper.load_autoloans_by_cik([trust_cik])
 
 
+# Update trust dropdown when manufacturer dropdown value changes
 @app.callback(
     dash.dependencies.Output('trust_select', 'options'),
     [dash.dependencies.Input('manu_select', 'value')]
@@ -261,6 +270,7 @@ def update_trust_options(manu_name):
     return [{'label': t['name'], 'value': t['cik']} for t in trusts[manu_name]]
 
 
+# Update signal with new cik when selected trust changes
 @app.callback(
     dash.dependencies.Output('trust_select', 'value'),
     [dash.dependencies.Input('manu_select', 'value')]
@@ -270,6 +280,7 @@ def update_trust_value(manu_name):
     return trusts[manu_name][0]['cik']
 
 
+# Update text on about tab when trust selection changes (signal updated)
 @app.callback(
     dash.dependencies.Output('about-text', 'children'),
     [dash.dependencies.Input('trust_select', 'value')]
@@ -279,6 +290,8 @@ def update_about_text(cik):
 
     return about_text.format(trust_name)
 
+
+# Update page title on trust change. "Loading..." indicator does not work properly [TBD]
 @app.callback(
     dash.dependencies.Output('trust_title', 'children'),
     [dash.dependencies.Input('signal', 'children'),
@@ -292,15 +305,17 @@ def update_title(signal_cik, select_cik):
         return f'## {trust_name}'
 
 
+# Update dataset and send signal upon selection of new trust by the user
 @app.callback(
     dash.dependencies.Output('signal', 'children'),
     [dash.dependencies.Input('trust_select', 'value')])
 def update_dataset(cik):
-    # compute value and send a signal when done
+    # Compute value and send a signal when done
     get_data(cik)
     return cik
 
 
+# Update scatter plot
 @app.callback(
     dash.dependencies.Output('main-scatter-plot', 'figure'),
     [dash.dependencies.Input('msp-xaxis', 'value'),
@@ -381,6 +396,7 @@ def update_msp(xaxis_column_name, yaxis_column_name, non_perf, cik):
     return {'data': traces, 'layout': layout}
 
 
+# Update histogram
 @app.callback(
     dash.dependencies.Output('main-histogram', 'figure'),
     [dash.dependencies.Input('hg-xaxis', 'value'),
@@ -400,8 +416,9 @@ def update_hg(xaxis_column_name, non_perf, bins, cik):
         hg_data = df[df['Repossession Date'].notnull()][xaxis_column_name]
         bar_color = colors['pink']
 
+    # Certain fields need to be sorted
     order_sequence = None
-    if xaxis_column_name in ['Geographic Location', 'Vehicle Model']:
+    if xaxis_column_name in categorical_fields:
         order_sequence = df[xaxis_column_name].value_counts().index
 
     layout = go.Layout(
@@ -434,13 +451,15 @@ def update_hg(xaxis_column_name, non_perf, bins, cik):
     return {'data': traces, 'layout': layout}
 
 
+# Disable no of bins slider for categorical fields
 @app.callback(
     dash.dependencies.Output('hg-bins', 'disabled'),
     [dash.dependencies.Input('hg-xaxis', 'value')])
 def disable_hg_bins_slider(metric):
-    return True if metric in ['Geographic Location', 'Vehicle Model'] else False
+    return True if metric in categorical_fields else False
 
 
+# Update heatmap
 @app.callback(
     dash.dependencies.Output('main-heatmap', 'figure'),
     [dash.dependencies.Input('hm-xaxis', 'value'),
@@ -451,7 +470,7 @@ def disable_hg_bins_slider(metric):
 def update_hm(xaxis_column_name, yaxis_column_name, zaxis_column_name, cik):
     df = get_data(cik)
 
-    # Create new data subset
+    # Create new data subset and assign axes
     subdata = pd.DataFrame({
         'x': df[xaxis_column_name],
         'y': df[yaxis_column_name],
@@ -462,9 +481,9 @@ def update_hm(xaxis_column_name, yaxis_column_name, zaxis_column_name, cik):
         subdata['z'] = df[delinquency_metrics[zaxis_column_name]]
     else:
         subdata['z'] = df[zaxis_column_name]
-    # Filter nans
+    # Filter out nans
     subdata = subdata[subdata.x.notnull() & subdata.y.notnull()]
-    # Cut axes into bins if numbers
+    # Cut axes into bins if numeric
     grouped = {'x': False, 'y': False}
     if subdata.x.dtype in numeric_types:
         subdata.x = pd.cut(subdata.x, 20, include_lowest=True)
@@ -526,13 +545,14 @@ def update_hm(xaxis_column_name, yaxis_column_name, zaxis_column_name, cik):
     return dict(data=[trace], layout=layout)
 
 
+# Update map
 @app.callback(
     dash.dependencies.Output('main-map', 'figure'),
     [dash.dependencies.Input('map-metric', 'value'),
      dash.dependencies.Input('signal', 'children')])
 def update_map(metric_raw, cik):
     df = get_data(cik)
-
+    # Extract metric name from its label
     metric = metric_raw.split(" - ")[0].strip()
     if metric in countable_metrics:
         state_data = df['Geographic Location'].value_counts()
@@ -543,7 +563,6 @@ def update_map(metric_raw, cik):
         state_data['Total'] = df['Geographic Location'].value_counts()
         state_data[metric] = state_data[metric_dfname] / state_data['Total']
         state_data = state_data[metric]
-
     else:
         state_data = df.groupby('Geographic Location')[metric].mean()
 
@@ -566,7 +585,7 @@ def update_map(metric_raw, cik):
             tickformat=Helper.get_format(metric, precision=1)
         ),
     )
-
+    # Text and formatting for hover text
     if metric in percentage_fields:
         map_data['hoverinfo'] = 'text+location'
         map_data['text'] = [Helper.get_format(metric, precision=1, style='python').format(v) for v in state_data.values]
@@ -591,6 +610,7 @@ def update_map(metric_raw, cik):
     return dict(data=[map_data], layout=map_layout)
 
 
+# Update evolution chart
 @app.callback(
     dash.dependencies.Output('main-evo', 'figure'),
     [dash.dependencies.Input('signal', 'children'),
@@ -598,11 +618,12 @@ def update_map(metric_raw, cik):
      dash.dependencies.Input('evo-nonperf', 'values')])
 def update_evo(cik, metric, nonperf):
     df = get_data(cik)
+
+    # Date range for date axis
     min_date = df['First Filing Date'].min()
     max_date = datetime.today()
-    # Date axis
     x_axis = Helper.get_months(min_date, max_date)
-    # Totals
+    # Compute totals
     total_count = [len(df) for _ in x_axis]
     total_value = [df['Loan Amount ($)'].sum() for _ in x_axis]
     # Counts
@@ -624,6 +645,7 @@ def update_evo(cik, metric, nonperf):
     rep_valper = rep_val / total_value
     del_valper = del_val / total_value
 
+    # Assign axes
     if metric == 'Total count':
         y_1 = del_count
         y_2 = rep_count
