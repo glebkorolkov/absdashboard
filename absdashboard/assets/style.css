@@ -20,8 +20,15 @@ body {
 	padding-bottom: 15px;
 }
 
+#manu_select {
+	display: inline-block;
+	margin-right: 15px;
+	width: 200px;
+}
+
 #trust_select {
-	max-width: 500px !important;
+	display: inline-block;
+	width: 500px;
 }
 
 .left-column {
@@ -56,6 +63,12 @@ body {
 	.left-column, .right-column {
 		display: block;
 		float: left;
+		width: 100%;
+	}
+}
+
+@media (max-width: 715px) {
+	#manu_select, #trust_select {
 		width: 100%;
 	}
 }

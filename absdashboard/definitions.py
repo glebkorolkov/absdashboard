@@ -139,15 +139,21 @@ map_metrics = [
     # 'Repossession Date'
 ]
 
-trusts = [
-    {'cik': '1694919', 'name': 'Toyota Auto Receivables 2017 A Owner Trust'},
-    {'cik': '1704304', 'name': 'Toyota Auto Receivables 2017 B Owner Trust'},
-    {'cik': '1709987', 'name': 'Toyota Auto Receivables 2017 C Owner Trust'},
-    {'cik': '1718100', 'name': 'Toyota Auto Receivables 2017 D Owner Trust'},
-    {'cik': '1725585', 'name': 'Toyota Auto Receivables 2018 A Owner Trust'},
-    {'cik': '1736712', 'name': 'Toyota Auto Receivables 2018 B Owner Trust'},
-    {'cik': '1745763', 'name': 'Toyota Auto Receivables 2018 C Owner Trust'},
-]
+trusts = {
+    'Toyota': [
+        {'cik': '1694919', 'name': 'Toyota Auto Receivables 2017 A Owner Trust'},
+        {'cik': '1704304', 'name': 'Toyota Auto Receivables 2017 B Owner Trust'},
+        {'cik': '1709987', 'name': 'Toyota Auto Receivables 2017 C Owner Trust'},
+        {'cik': '1718100', 'name': 'Toyota Auto Receivables 2017 D Owner Trust'},
+        {'cik': '1725585', 'name': 'Toyota Auto Receivables 2018 A Owner Trust'},
+        {'cik': '1736712', 'name': 'Toyota Auto Receivables 2018 B Owner Trust'},
+        {'cik': '1745763', 'name': 'Toyota Auto Receivables 2018 C Owner Trust'},
+    ]
+}
+
+trusts_flat = []
+for t in trusts:
+    trusts_flat += trusts[t]
 
 colors = dict(
     green='#4CAF50',
