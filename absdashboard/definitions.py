@@ -207,12 +207,27 @@ delinquency_metrics = {'Non-performing Percentage': '30 Days Delinquency Date',
 loading_string = "## Loading..."
 
 about_text = '''
+#### About
+
+This is a visualization tool for auto loan data from ABS-EE filings. ABS-EE forms are filed to the SEC by issuers 
+of asset-backed securities. Each loan is described with approx. 60 data points relating to its terms, 
+borrower's credit, vehicle, and activity on the loan. Form are filed on a monthly basis enabling investors and general 
+public to track performance of loan portfolios over time. 
+
+This dashboard was designed to make it easier to make sense of auto loan data in ABS-EE filings by utilizing visual 
+tools such as histograms, maps, heatmaps and charts.
+
 #### Dataset
 
-Portfolio of auto loans underlying asset-backed notes issued by _{}_.
+Data on portfolio of auto loans underlying asset-backed notes issued by _{}_.
 
+#### Sources
 
+Data source: [EDGAR]  
+Github repository: [TBD]
 
-Data source: [EDGAR]({})  
-Github: [TBD]
+#### Author
+
+Gleb Korolkov  
+gleb[dot]korolkov[at]gmail[dot]com
 '''

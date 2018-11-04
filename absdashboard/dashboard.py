@@ -229,11 +229,11 @@ app.layout = html.Div(
                      ),
                      dcc.Tab(
                          label="About",
-                         children=[html.Div([
-                             # dcc.Markdown(dedent(about_text.format(featured_trust['name'],
-                             #                                       featured_trust['cik'])))
-                         ], className='plain-text')
-                         ],
+                         children=[html.Div([], className='left-column'),
+                                   dcc.Markdown(
+                                       id='about-text',
+                                       children=[],
+                                       className='right-column  plain-text')],
                          className='main-tab'
                      )
                  ]
@@ -269,6 +269,15 @@ def update_trust_value(manu_name):
     print(manu_name)
     return trusts[manu_name][0]['cik']
 
+
+@app.callback(
+    dash.dependencies.Output('about-text', 'children'),
+    [dash.dependencies.Input('trust_select', 'value')]
+)
+def update_about_text(cik):
+    trust_name = list(filter(lambda t: t['cik'] == cik, trusts_flat))[0]['name']
+
+    return about_text.format(trust_name)
 
 @app.callback(
     dash.dependencies.Output('trust_title', 'children'),
@@ -594,8 +603,8 @@ def update_evo(cik, metric, nonperf):
     # Date axis
     x_axis = Helper.get_months(min_date, max_date)
     # Totals
-    total_count = [len(df) for t in x_axis]
-    total_value = [df['Loan Amount ($)'].sum() for t in x_axis]
+    total_count = [len(df) for _ in x_axis]
+    total_value = [df['Loan Amount ($)'].sum() for _ in x_axis]
     # Counts
     rep_count = np.array([df[df['Repossession Date'] <= t]['Repossession Date'].count() for t in x_axis])
     del_count = np.array([df[(df['30 Days Delinquency Date'] <= t) &
