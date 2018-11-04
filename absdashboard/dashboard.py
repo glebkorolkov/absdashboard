@@ -26,13 +26,6 @@ cache.init_app(app.server, config=cache_params)
 
 app.title = 'Dashboard | Auto Loans'
 
-featured_trust = trusts[0]
-# all_trusts = [t['cik'] for t in trusts]
-
-# df = Helper.load_autoloans_by_cik([featured_trust['cik']])
-# df = Helper.load_autoloans_by_cik(all_trusts)
-# df = pd.DataFrame()
-
 # PLOTS
 
 main_scatter_plot = dcc.Graph(id='main-scatter-plot')
@@ -190,13 +183,15 @@ app.layout = html.Div(
         dcc.Markdown(id='trust_title',
                      children=loading_string,
                      className='main-title'),
-        # dcc.Markdown(id='trust_title', children=f"##### Loaded dataset: **{featured_trust['name']}**"),
         html.Div([html.Div([
-            # html.Label(['Select trust:']),
+            dcc.Dropdown(
+                id="manu_select",
+                options=[{'label': m, 'value': m} for m in list(trusts.keys())],
+                value='Toyota'),
             dcc.Dropdown(
                 id="trust_select",
-                options=[{'label': t['name'], 'value': t['cik']} for t in trusts],
-                value=f"{featured_trust['cik']}")
+                options=[{'label': t['name'], 'value': t['cik']} for t in trusts['Toyota']],
+                value="1694919")
         ], className='')
 
         ], className='top-select'),
@@ -235,8 +230,8 @@ app.layout = html.Div(
                      dcc.Tab(
                          label="About",
                          children=[html.Div([
-                             dcc.Markdown(dedent(about_text.format(featured_trust['name'],
-                                                                   featured_trust['cik'])))
+                             # dcc.Markdown(dedent(about_text.format(featured_trust['name'],
+                             #                                       featured_trust['cik'])))
                          ], className='plain-text')
                          ],
                          className='main-tab'
@@ -259,6 +254,23 @@ def get_data(trust_cik):
 
 
 @app.callback(
+    dash.dependencies.Output('trust_select', 'options'),
+    [dash.dependencies.Input('manu_select', 'value')]
+)
+def update_trust_options(manu_name):
+    return [{'label': t['name'], 'value': t['cik']} for t in trusts[manu_name]]
+
+
+@app.callback(
+    dash.dependencies.Output('trust_select', 'value'),
+    [dash.dependencies.Input('manu_select', 'value')]
+)
+def update_trust_value(manu_name):
+    print(manu_name)
+    return trusts[manu_name][0]['cik']
+
+
+@app.callback(
     dash.dependencies.Output('trust_title', 'children'),
     [dash.dependencies.Input('signal', 'children'),
      dash.dependencies.Input('trust_select', 'value')]
@@ -267,7 +279,7 @@ def update_title(signal_cik, select_cik):
     if not select_cik == signal_cik:
         return loading_string
     else:
-        trust_name = list(filter(lambda t: t['cik'] == signal_cik, trusts))[0]['name']
+        trust_name = list(filter(lambda t: t['cik'] == signal_cik, trusts_flat))[0]['name']
         return f'## {trust_name}'
 
 
