@@ -579,37 +579,47 @@ def update_evo(cik, metric, nonperf):
     df = get_data(cik)
     min_date = df['First Filing Date'].min()
     max_date = datetime.today()
-
+    # Date axis
     x_axis = Helper.get_months(min_date, max_date)
-
+    # Totals
     total_count = [len(df) for t in x_axis]
     total_value = [df['Loan Amount ($)'].sum() for t in x_axis]
-
-    y_rep_count = np.array([df[df['Repossession Date'] <= t]['Repossession Date'].count() for t in x_axis])
-    y_del_count = np.array([df[(df['30 Days Delinquency Date'] <= t) &
-                               (df['Repossession Date'].isnull())]['30 Days Delinquency Date'].count() for t in x_axis])
-    y_rep_countper = y_rep_count / total_count
-    y_del_countper = y_del_count / total_count
-
-    y_rep_val = np.array([df[df['Repossession Date'] <= t]['Loan Amount ($)'].sum() for t in x_axis])
-    y_del_val = np.array([df[(df['30 Days Delinquency Date'] <= t) &
+    # Counts
+    rep_count = np.array([df[df['Repossession Date'] <= t]['Repossession Date'].count() for t in x_axis])
+    del_count = np.array([df[(df['30 Days Delinquency Date'] <= t) &
+                             (df['Repossession Date'].isnull())]['30 Days Delinquency Date'].count() for t in x_axis])
+    rep_countdiff = np.insert(np.diff(rep_count), 0, 0)
+    del_countdiff = np.insert(np.diff(del_count), 0, 0)
+    # Percentages
+    rep_countper = rep_count / total_count
+    del_countper = del_count / total_count
+    # Value-based
+    rep_val = np.array([df[df['Repossession Date'] <= t]['Loan Amount ($)'].sum() for t in x_axis])
+    del_val = np.array([df[(df['30 Days Delinquency Date'] <= t) &
                              (df['Repossession Date'].isnull())]['Loan Amount ($)'].sum() for t in x_axis])
-    y_rep_valper = y_rep_val / total_value
-    y_del_valper = y_del_val / total_value
+    rep_valdiff = np.insert(np.diff(rep_val), 0, 0)
+    del_valdiff = np.insert(np.diff(del_val), 0, 0)
+    # Percentages
+    rep_valper = rep_val / total_value
+    del_valper = del_val / total_value
 
     if metric == 'Total count':
-        y_1 = y_del_count
-        y_2 = y_rep_count
-        y_1p = y_del_countper
-        y_2p = y_rep_countper
+        y_1 = del_count
+        y_2 = rep_count
+        y_1d = del_countdiff
+        y_2d = rep_countdiff
+        y_1p = del_countper
+        y_2p = rep_countper
     else:
-        y_1 = y_del_val
-        y_2 = y_rep_val
-        y_1p = y_del_valper
-        y_2p = y_rep_valper
+        y_1 = del_val
+        y_2 = rep_val
+        y_1d = del_valdiff
+        y_2d = rep_valdiff
+        y_1p = del_valper
+        y_2p = rep_valper
 
     trace_1 = dict(
-        name=metric + ' - Non-performing',
+        name='Non-performing',
         x=x_axis,
         y=y_1,
         type='line',
@@ -619,7 +629,7 @@ def update_evo(cik, metric, nonperf):
         )
     )
     trace_2 = dict(
-        name=metric + ' - Repossessed',
+        name='Repossessed',
         x=x_axis,
         y=y_2,
         type='line',
@@ -629,11 +639,33 @@ def update_evo(cik, metric, nonperf):
         )
     )
 
+    trace_1d = dict(
+        name='Non-perf Change',
+        x=x_axis,
+        y=y_1d,
+        type='bar',
+        line=dict(
+            color=colors['amber']
+        )
+    )
+
+    trace_2d = dict(
+        name='Repo Change',
+        x=x_axis,
+        y=y_2d,
+        type='bar',
+        line=dict(
+            color=colors['red']
+        )
+    )
+
     traces = []
     if 'D' in nonperf:
         traces.append(trace_1)
+        traces.append(trace_1d)
     if 'R' in nonperf:
         traces.append(trace_2)
+        traces.append(trace_2d)
 
     layout = go.Layout(
         font=dict(
