@@ -1,4 +1,5 @@
 from sqlalchemy import create_engine
+import numpy as np
 import pandas as pd
 from config import db_config
 from definitions import *
@@ -21,6 +22,57 @@ class Helper(object):
         :return: sqlalchemy engine object
         """
         return create_engine(f"mysql+pymysql://{user}:{password}@{host}:{port}/{database}")
+
+    @staticmethod
+    def get_trust_list():
+        # Create database engine
+        engine = Helper.get_db_engine(
+            user=db_config['user'],
+            password=db_config['password'],
+            host=db_config['host'],
+            port=db_config['port'],
+            database=db_config['name']
+        )
+        query = "SELECT DISTINCT trustCik, trustName FROM assets.filings " \
+                "WHERE trustCik IN " \
+                "   (SELECT DISTINCT trustCik FROM assets.autoloans_flat) " \
+                "ORDER BY trustName, trustCik;"
+        trust_table = pd.read_sql(query, engine)
+
+        def extract_name(trust_name):
+            """
+            Extract manufacturer's name from trust name.
+            :param trust_name: string
+            :return: string
+            """
+            delimiters = [
+                'Vehicle Owner',
+                'Credit Auto Owner',
+                'Financial Consumer',
+                'Auto Receivables',
+                'Auto Loan',
+                'Auto Owner'
+            ]
+
+            name = trust_name
+            for delimiter in delimiters:
+                if delimiter in trust_name:
+                    name = trust_name.split(delimiter)[0].strip()
+                    break
+            return name
+
+        trust_table['trustCik'] = trust_table['trustCik'].astype(str)
+        trust_table['manufacturer'] = trust_table['trustName'].apply(extract_name)
+        manufacturers = sorted(trust_table['manufacturer'].unique())
+        trusts = {}
+        for manufacturer in manufacturers:
+            m_trusts = trust_table[trust_table['manufacturer'] == manufacturer][['trustCik', 'trustName']]\
+                    .rename(columns={'trustCik': 'cik', 'trustName': 'name'})\
+                    .to_dict('index').values()
+            m_trusts = list(m_trusts)
+            trusts[manufacturer] = m_trusts
+
+        return trusts
 
     @staticmethod
     def load_autoloans_by_cik(ciks):
@@ -140,6 +192,11 @@ class Helper(object):
             'zeroBalanceCode'
         ]].astype('category')
 
+        # Clean fields
+        data.obligorCreditScore = \
+            data.obligorCreditScore.apply(lambda x: np.nan if x.lower() in ["no score", "none", "0", 0] else x)
+        data.obligorGeographicLocation = data.obligorGeographicLocation.apply(lambda x: x.strip())
+
         # Rename categories
         data.subvented = data.subvented.cat.rename_categories(subvented_map)
         data.vehicleNewUsedCode = data.vehicleNewUsedCode.cat.rename_categories(vehicle_new_used_map)
@@ -158,7 +215,7 @@ class Helper(object):
         data.originalLoanTerm = data.originalLoanTerm.astype('uint16')
         data.originalLoanAmount = data.originalLoanAmount.astype('float32')
         data.vehicleValueAmount = data.vehicleValueAmount.astype('float32')
-        data.obligorCreditScore = data.obligorCreditScore.astype('uint16')
+        data.obligorCreditScore = data.obligorCreditScore.astype('float16')
 
         # Cap values at 1.0 for paymentToIncomePercentage
         data.paymentToIncomePercentage = data.paymentToIncomePercentage.map(lambda x: min(x, 1))
@@ -204,7 +261,7 @@ class Helper(object):
         :param style: either 'plotly' or 'python'
         :return: format string in js/plotly or python format
         """
-        frmts = ["d", "{:d}"]
+        frmts = ["d", "{}"]
         if fieldname in percentage_fields:
             frmts = [f'.{precision}%', '{' + f':.{precision}%' + '}']
         elif fieldname in dollar_fields:

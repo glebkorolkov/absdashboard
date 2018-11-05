@@ -9,6 +9,13 @@ import numpy as np
 from helper import Helper
 from definitions import *
 
+
+trusts = Helper.get_trust_list()
+# Same as above w/o manufacturer name all in one list
+trusts_flat = []
+for t in trusts:
+    trusts_flat += trusts[t]
+
 external_stylesheets = [
     'https://codepen.io/chriddyp/pen/bWLwgP.css',
     'https://fonts.googleapis.com/css?family=Work+Sans'
@@ -276,7 +283,6 @@ def update_trust_options(manu_name):
     [dash.dependencies.Input('manu_select', 'value')]
 )
 def update_trust_value(manu_name):
-    print(manu_name)
     return trusts[manu_name][0]['cik']
 
 
@@ -286,9 +292,9 @@ def update_trust_value(manu_name):
     [dash.dependencies.Input('trust_select', 'value')]
 )
 def update_about_text(cik):
+    df = get_data(cik)
     trust_name = list(filter(lambda t: t['cik'] == cik, trusts_flat))[0]['name']
-
-    return about_text.format(trust_name)
+    return about_text.format(len(df), trust_name)
 
 
 # Update page title on trust change. "Loading..." indicator does not work properly [TBD]
