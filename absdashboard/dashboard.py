@@ -574,8 +574,8 @@ def update_map(metric_raw, cik):
 
     map_data = dict(
         type="choropleth",
-        # colorscale='Greens',
-        colorscale=list(zip(np.linspace(0, 1, len(colorscales['green'])), colorscales['green'])),
+        colorscale='Greens',
+        # colorscale=list(zip(np.linspace(0, 1, len(colorscales['green'])), colorscales['green'])),
         reversescale=True,
         autocolorscale=False,
         locations=state_data.index,

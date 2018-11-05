@@ -19,6 +19,7 @@ msp_axes = [
     # 'Employment Verification Level',
     # 'Co-obligor',
     'Payment-to-Income Percentage',
+    'Loan-To-Value (%)',
     # 'Underwriting Indicator',
     # 'Geographic Location',
     # 'Zero Balance Reason',
@@ -47,6 +48,7 @@ hg_axes = [
     'Employment Verification Level',
     'Co-obligor',
     'Payment-to-Income Percentage',
+    'Loan-To-Value (%)',
     # 'Underwriting Indicator',
     'Geographic Location',
     # 'Zero Balance Reason',
@@ -75,6 +77,7 @@ hm_axes = [
     'Employment Verification Level',
     'Co-obligor',
     'Payment-to-Income Percentage',
+    'Loan-To-Value (%)',
     # 'Underwriting Indicator',
     'Geographic Location',
     # 'Zero Balance Reason',
@@ -106,6 +109,7 @@ hm_zaxis = [
     # 'Employment Verification Level',
     # 'Co-obligor',
     'Payment-to-Income Percentage',
+    'Loan-To-Value (%)',
     # 'Underwriting Indicator',
     # 'Geographic Location',
     # 'Zero Balance Reason',
@@ -137,6 +141,7 @@ map_metrics = [
     # 'Employment Verification Level',
     # 'Co-obligor',
     'Payment-to-Income Percentage - Avg.',
+    'Loan-To-Value (%) - Avg.',
     # 'Underwriting Indicator',
     # 'Geographic Location',
     # 'Zero Balance Reason',
@@ -177,6 +182,7 @@ percentage_fields = [
     'Payment-to-Income Percentage',
     'Non-performing Percentage',
     'Repossessed Percentage',
+    'Loan-To-Value (%)'
 ]
 
 dollar_fields = [
