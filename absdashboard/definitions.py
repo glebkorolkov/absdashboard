@@ -242,11 +242,11 @@ Data on portfolio of auto loans underlying asset-backed notes issued by _{}_.
 
 #### Sources
 
-Data source: [EDGAR]  
-Github repository: [TBD]
+Data source: [SEC EDGAR](https://searchwww.sec.gov/EDGARFSClient/jsp/EDGAR_MainAccess.jsp?search_text=*&sort=Date&formType=FormABSEE&isAdv=true&stemming=true&numResults=10&querySic=6189&fromDate=11/01/2016&toDate=10/10/2018&numResults=10)  
+Scraper on Github: [https://github.com/glebkorolkov/absscraper](https://github.com/glebkorolkov/absscraper)  
+Dashboard on Github: [https://github.com/glebkorolkov/absdashboard](https://github.com/glebkorolkov/absdashboard)
 
 #### Author
 
-Gleb Korolkov  
-gleb[dot]korolkov[at]gmail[dot]com
+Gleb Korolkov
 '''
