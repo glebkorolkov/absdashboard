@@ -251,8 +251,8 @@ class Helper(object):
         # Add features
         data['Loan-To-Value (%)'] = data['Loan Amount ($)'] / data['Vehicle Value ($)']
 
-        print(f"Loaded dataset of {len(data)} items. "
-              f"Memory usage: {round(data.memory_usage().sum()/(1024*1024), 2)} Mb")
+        # print(f"Loaded dataset of {len(data)} items. "
+        #       f"Memory usage: {round(data.memory_usage().sum()/(1024*1024), 2)} Mb")
         return data
 
     @staticmethod
