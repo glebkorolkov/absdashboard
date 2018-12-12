@@ -27,6 +27,8 @@ app = dash.Dash(
     external_stylesheets=external_stylesheets
 )
 app.title = 'Dashboard | Auto Loans'
+server = app.server
+server.secret_key = 'asdf*lip3o48upiovn_eP'
 
 # Set up cache. Required since dataset for each trust is quite large
 cache = Cache()
